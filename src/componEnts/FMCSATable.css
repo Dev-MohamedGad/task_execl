@@ -1,0 +1,31 @@
+/* src/components/FMCSATable.css */
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+  }
+  
+  .pagination li {
+    list-style-type: none;
+    margin: 0 5px;
+  }
+  
+  .pagination li a {
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: #007bff;
+    cursor: pointer;
+  }
+  
+  .pagination li a:hover {
+    background-color: #ddd;
+  }
+  
+  .pagination li.active a {
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #007bff;
+  }
+  
