@@ -17,6 +17,7 @@ const fetchData = async (page = 0, perPage = 100) => {
 
 const FMCSATable = () => {
   const [currentPage, setCurrentPage] = useState(0);
+  const [selectedRecord, setSelectedRecord] = useState(null); // State for selected record
   const recordsPerPage = 100; // Adjust as needed
 
   const { isLoading, error, data, refetch } = useQuery(
@@ -34,10 +35,10 @@ const FMCSATable = () => {
     refetch();
   }, [currentPage, refetch]);
 
-  if (error) return <div>An error has occurred: {error.message}</div>;
-  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div className="text-red-500">An error has occurred: {error.message}</div>;
+  if (isLoading) return <div className="text-gray-500">Loading...</div>;
 
-  if (!data?.data || !data?.totalRecords) return <div>No records found.</div>;
+  if (!data?.data || !data?.totalRecords) return <div className="text-gray-500">No records found.</div>;
 
   const { data: records, totalRecords } = data;
   const pageCount = Math.ceil(totalRecords / recordsPerPage);
@@ -79,27 +80,31 @@ const FMCSATable = () => {
     { key: 'record_status', label: 'Record Status' },
   ];
 
+  const handleRowClick = (record) => {
+    setSelectedRecord(record); // Set the selected record for the modal
+  };
+
+  const closeModal = () => {
+    setSelectedRecord(null); // Close the modal by clearing the selected record
+  };
+
   return (
     <div className="container mx-auto p-4">
-      <table className="min-w-full bg-white border-collapse">
-        <thead>
+      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
+        <thead className="bg-gray-100">
           <tr>
-          <th className='py-2 px-4 border-b border-gray-200'>ID</th>
-
+            <th className='py-2 px-4 border-b border-gray-200 text-left text-gray-600'>ID</th>
             {columns.map((col) => (
-              <th key={col.key} className="py-2 px-4 border-b border-gray-200">{col.label}</th>
+              <th key={col.key} className="py-2 px-4 border-b border-gray-200 text-left text-gray-600">{col.label}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {records.map((record, index) => (
-            
-            <tr key={index} className="text-center">
-            <td className='py-2 px-4 border-b border-gray-200'>{index+1}</td>
+            <tr key={index} className="text-center even:bg-gray-50 hover:bg-gray-100 cursor-pointer" onClick={() => handleRowClick(record)}>
+              <td className='py-2 px-4 border-b border-gray-200'>{index + 1}</td>
               {columns.map((col) => (
-                
-            
-              <td key={col.key} className="py-2 px-4 border-b border-gray-200">
+                <td key={col.key} className="py-2 px-4 border-b border-gray-200">
                   {record[col.key] || 'N/A'}
                 </td>
               ))}
@@ -109,7 +114,7 @@ const FMCSATable = () => {
       </table>
 
       {/* Pagination Controls */}
-      <div className="mt-4">
+      <div className="mt-4 flex justify-center">
         <ReactPaginate
           previousLabel={'Previous'}
           nextLabel={'Next'}
@@ -119,12 +124,43 @@ const FMCSATable = () => {
           marginPagesDisplayed={2}
           pageRangeDisplayed={5}
           onPageChange={handlePageClick}
-          containerClassName={'pagination'}
-          subContainerClassName={'pages pagination'}
-          activeClassName={'active'}
-          disabledClassName={'disabled'}
+          containerClassName={'flex space-x-2'}
+          previousClassName={'bg-blue-500 text-white px-4 py-2 rounded'}
+          nextClassName={'bg-blue-500 text-white px-4 py-2 rounded'}
+          pageClassName={'bg-gray-200 px-4 py-2 rounded'}
+          activeClassName={'bg-blue-500 text-white'}
+          disabledClassName={'opacity-50 cursor-not-allowed'}
         />
       </div>
+
+      {/* Modal for displaying details */}
+      {selectedRecord && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg w-full max-w-3xl">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold mb-4">Record Details</h2>
+              <button className="text-gray-500 hover:text-gray-800" onClick={closeModal}>
+                &times; {/* Close icon */}
+              </button>
+            </div>
+            <table className="min-w-full bg-white border border-gray-200">
+              <tbody>
+                {Object.entries(selectedRecord).map(([key, value]) => (
+                  <tr key={key}>
+                    <td className="py-2 px-4 border-b border-gray-200 font-bold">{key}</td>
+                    <td className="py-2 px-4 border-b border-gray-200">{value || 'N/A'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="flex justify-center mt-6"> {/* Increased margin top */}
+              <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={closeModal}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
